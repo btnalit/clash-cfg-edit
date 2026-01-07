@@ -1,0 +1,771 @@
+# ==================== 基础配置 ====================
+mixed-port: 7890
+redir-port: 7891
+tproxy-port: 7892
+port: 7893
+socks-port: 7894
+#intface-name: 172.18.0.7
+allow-lan: true
+bind-address: '*'
+mode: rule
+log-level: info
+ipv6: false
+# Web 控制面板
+external-controller: 0.0.0.0:9090
+external-ui: /root/.config/mihomo/ui
+external-ui-url: "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip"
+secret: "mihomo123"
+# GeoData 配置
+geodata-mode: true
+geodata-loader: standard
+tcp-concurrent: true
+unified-delay: true
+global-client-fingerprint: random
+ntp:
+  enable: true
+  write-to-system: false
+  server: ntp.aliyun.com
+  port: 123
+  interval: 30
+# ==================== 嗅探 (Sniffer) ====================
+sniffer:
+  enable: true
+  override-destination: true
+  force-domain:
+  - "+.netflix.com"
+  - "+.nflxvideo.net"
+  - "+.amazonaws.com"
+  - "+.media.dssott.com"
+  - '+.google.com'
+  - '+.facebook.com'
+  - '+.youtube.com'
+  - '+.githubusercontent.com'
+  - '+.googlevideo.com'
+  - '+.tiktokv.us'
+  - '+.tiktokcdn-us.com'
+ 
+  skip-domain:
+  - "+.apple.com"
+  - Mijia Cloud
+  - dlg.io.mi.com
+  - "+.oray.com"
+  - "+.sunlogin.net"
+  - "+.push.apple.com"
+  force-dns-mapping: true
+  parse-pure-ip: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    QUIC:
+      ports: [443, 8443]
+    TLS:
+      ports: [443, 8443]
+# ==================== 透明代理核心配置 ====================
+tun:
+  enable: true
+  stack: mixed
+  dns-hijack:
+    - any:53  
+    - tcp://any:53  # 接管所有DNS请求，防止DNS泄露
+    - udp://any:53  # 接管所有DNS请求，防止DNS泄露
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+  endpoint-independent-nat: true
+  mtu: 1500
+
+# ==================== DNS配置 ====================
+dns:
+  enable: true
+  listen: ':53'
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 10.199.0.1/16
+  fake-ip-filter:
+    # === 局域网与路由管理 ===
+    - '*.lan'
+    - '*.local'
+    - '*.arpa'
+    - '*.home.arpa'
+    - '*.srv.nintendo.net' # 任天堂局域网联机
+    - 'miwifi.com'         # 小米路由
+    - 'router.asus.com'    # 华硕路由
+    - 'router.synology.com' # 群晖路由
+    - 'plext.com'          # 华硕相关
+    - 'amplifi.lan'
+    - 'ubnt.pool.ntp.org'
+
+    # === 系统连通性检测 (防止网络图标显示感叹号) ===
+    # Windows
+    - '*.msftncsi.com'
+    - '*.msftconnecttest.com'
+    # Android / Google
+    - 'connectivitycheck.gstatic.com'
+    - 'connectivitycheck.android.com' # 较旧的安卓
+    # Apple
+    - 'captive.apple.com'
+    - 'hotspot.csl.com.hk' # 某些地区苹果检测
+    - 'www.appleiphonecell.com'
+
+    # === NTP 时间同步服务 (必须真实IP) ===
+    - 'time.*.com'
+    - 'ntp.*.com'
+    - '*.pool.ntp.org'
+    - 'time.nist.gov'
+    - 'time.apple.com'
+    - 'time.asia.apple.com'
+    - 'time.windows.com'
+    - 'time.google.com'
+
+    # === 游戏与 STUN 服务 (改善 NAT 类型) ===
+    # 尽管你在规则里屏蔽了 UDP STUN，但保留这些在 filter 列表是好习惯
+    - '*.stun.*'
+    - '*.stun.*.*'
+    - '+.stun.playstation.net'
+    - 'xbox.*.microsoft.com'
+    - 'xbox.*.xboxlive.com'
+    - '+.xboxlive.com'
+    - 'speedtest.cros.wr.pvp.net' # 英雄联盟手游测速
+
+    # === 登录认证与特定国内服务 ===
+    - 'localhost.ptlogin2.qq.com' # QQ 快捷登录
+    - 'localhost.sec.qq.com'
+    - '+.market.xiaomi.com'       # 小米应用商店
+    - 'mi.com'
+    - '+.update.microsoft.com'    # Windows 更新有时候 FakeIP 会卡
+    - '+.media.dssott.com'        # Disney+ 部分验证
+
+    # === DDNS 与 远程访问 ===
+    # 如果你有群晖或华硕的 DDNS，建议加上
+    - '*.synology.me'
+    - '*.asuscomm.com'
+    - '*.quickconnect.to'
+
+    # === 音乐服务 (防止版权区域误判) ===
+    # 网易云音乐有时候通过 IP 判断直连还是代理
+    - 'music.163.com'
+    - '*.music.163.com'
+    - '*.126.net'
+
+    # === 代理客户端本身 ===
+    - 'lens.l.google.com' # Google Lens 有时需要真实 IP
+  respect-rules: true
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - 'https://1.1.1.1/dns-query'
+    - 'https://8.8.8.8/dns-query'
+  proxy-server-nameserver:
+    - 'https://doh.pub/dns-query'
+    - 'https://dns.alidns.com/dns-query'
+  nameserver-policy:
+    "geosite:cn,private":
+      - 'https://doh.pub/dns-query'
+      - 'https://dns.alidns.com/dns-query'
+    "geosite:geolocation-!cn":
+      - 'https://1.1.1.1/dns-query'
+      - 'https://8.8.8.8/dns-query'
+
+# ==================== [新增] 自动订阅源 ====================
+# 这里是实现自动更新的关键
+#proxy-providers:
+#  MitceSub: # 订阅源名称
+#    type: http
+#    # 你的订阅链接
+#    url: "https://app.mitce.net/?sid=399125&token=srvghmxv"
+#    path: ./proxies/mitce.yaml # 缓存文件路径
+#    interval: 21600 # 每6小时自动更新一次
+#    health-check:
+#      enable: true
+#      interval: 600
+#      # 自动剔除不可用的节点
+#      url: http://www.gstatic.com/generate_204
+
+# ==================== 代理节点 (保留你原有的手动节点) ====================
+proxies:
+  - name: vless-ws
+    type: vless
+    server: cdns.doon.eu.org
+    port: 443
+    uuid: 168390a0-2beb-4a7b-8a59-31b6661ee0d4
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    servername: freedom2.btnalit.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/vless-argo?ed=2560"
+      headers:
+        Host: freedom2.btnalit.de5.net
+
+  - name: vmess-ws
+    type: vmess
+    server: cdns.doon.eu.org
+    port: 443
+    uuid: 168390a0-2beb-4a7b-8a59-31b6661ee0d4
+    cipher: auto
+    alterId: 0
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    servername: freedom2.btnalit.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/vmess-argo?ed=2560"
+      headers:
+        Host: freedom2.btnalit.de5.net
+
+  - name: trojan-ws
+    type: trojan
+    server: cdns.doon.eu.org
+    port: 443
+    password: 168390a0-2beb-4a7b-8a59-31b6661ee0d4
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    sni: freedom2.btnalit.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/trojan-argo?ed=2560"
+      headers:
+        Host: freedom2.btnalit.de5.net
+
+  - name: myfreedom01-SG_Railway_vless-ws
+    type: vless
+    server: cdns.doon.eu.org
+    port: 443
+    uuid: 289526a2-f48e-42b4-87d2-5841a75f30e1
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    servername: myfreedom01.yancao.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/vless-argo?ed=2560"
+      headers:
+        Host: myfreedom01.yancao.de5.net
+
+  - name: myfreedom01-SG_Railway_vmess-ws
+    type: vmess
+    server: cdns.doon.eu.org
+    port: 443
+    uuid: 289526a2-f48e-42b4-87d2-5841a75f30e1
+    cipher: auto
+    alterId: 0
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    servername: myfreedom01.yancao.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/vmess-argo?ed=2560"
+      headers:
+        Host: myfreedom01.yancao.de5.net
+
+  - name: myfreedom01-SG_Railway_trojan-ws
+    type: trojan
+    server: cdns.doon.eu.org
+    port: 443
+    password: 289526a2-f48e-42b4-87d2-5841a75f30e1
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    sni: myfreedom01.yancao.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/trojan-argo?ed=2560"
+      headers:
+        Host: myfreedom01.yancao.de5.net
+        
+  - name: Hug-trojan
+    type: trojan  
+    server: nrtcfdns.zone.id
+    port: 443
+    password: 5efabea4-f6d4-91fd-b8f0-17e004c89c60
+    sni: freedom.btnalit.de5.net
+    tls: true
+    udp: true    
+    skip-cert-verify: true
+    network: ws
+    client-fingerprint: firefox    
+    ws-opts: 
+      path: /5efabea4
+      headers: 
+        Host: freedom.btnalit.de5.net
+
+  - name: Hug-vless
+    type: vless  
+    server: nrtcfdns.zone.id
+    port: 443
+    uuid: 5efabea4-f6d4-91fd-b8f0-17e004c89c60
+    servername: freedom.btnalit.de5.net
+    tls: true
+    udp: true    
+    skip-cert-verify: true    
+    network: ws
+    client-fingerprint: firefox    
+    ws-opts: 
+      path: /5efabea4
+      headers: 
+        Host: freedom.btnalit.de5.net        
+
+  - name: CF官方优选-1
+    type: vless
+    server: 162.159.153.64
+    port: 443
+    uuid: 73a1da26-d8cc-4677-8382-68c0f291a3e0
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    servername: home.yancao.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/"
+      headers:
+        Host: home.yancao.de5.net
+
+  - name: CF官方优选-2
+    type: vless
+    server: 8.39.125.57
+    port: 443
+    uuid: 73a1da26-d8cc-4677-8382-68c0f291a3e0
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    servername: home.yancao.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/"
+      headers:
+        Host: home.yancao.de5.net
+
+  - name: CF官方优选-3
+    type: vless
+    server: 104.19.51.65
+    port: 443
+    uuid: 73a1da26-d8cc-4677-8382-68c0f291a3e0
+    tls: true
+    udp: true
+    skip-cert-verify: true
+    servername: home.yancao.de5.net
+    network: ws
+    client-fingerprint: firefox
+    ws-opts:
+      path: "/"
+      headers:
+        Host: home.yancao.de5.net
+  # ------------------------------------------------
+  # 🚩 第1层: 本地出口 (Node A)
+  # ------------------------------------------------
+  # name: "GZ_IPv6_Reality_2409"
+  # type: vless
+  # server: "2408:8256:1480:74e6:662b:a4ff:fe36:19e2"
+  # port: 443
+  # uuid: "55ceef53-d700-4db7-836a-4c8d909ba353"
+  # network: "tcp"
+  # tls: true
+  # udp: true
+  # flow: "xtls-rprx-vision"
+  # client-fingerprint: "chrome"
+  # servername: "pan.wo.cn"
+  # alpn:
+  # - h2
+  # - http/1.1
+  # reality-opts:
+  #   public-key: "LN63IlPpbPsxAbFHF55zg706tnFwD0Dvc-PYOfAK_yY"
+  #   short-id: "a8b5c0d0"
+
+  # ------------------------------------------------
+  # 🚀 第2层 (Node B) - VLESS 协议
+  # ------------------------------------------------
+  - name: "USA-bwh81_grpc"
+    type: vless
+    server: "2607:8700:5500:6c7c::2"
+    port: 443
+    uuid: "a70bddd2-daaa-4e75-94f7-7be2bd767302"
+    network: "grpc"
+    tls: true
+    udp: true
+    client-fingerprint: "chrome"
+    servername: "www.microsoft.com"
+    alpn:
+    - h2
+    reality-opts:
+      public-key: "PBCWTaX7yenZi3MUtm3kKBWapcwSHgj9yU10G4MLoxM"
+      short-id: "e2d05a4b"
+    grpc-opts:
+      grpc-service-name: "drive"
+
+  # ------------------------------------------------
+  # 🆕 第2层 (Node B) - AnyTLS (Trojan) 协议
+  # 🔴 关键修正：添加了 dialer-proxy 和 skip-cert-verify
+  # ------------------------------------------------
+  - name: "USA-bwh81-AnyTLS_8443"
+    type: anytls
+    server: "2607:8700:5500:6c7c::2"
+    port: 8443
+    password: "66668888" # 对应服务端的 value
+    sni: "btnalit.publicvm.com"
+    alpn:
+      - h2
+      - http/1.1
+    udp: true
+    skip-cert-verify: true # ⚠️ 必填：服务端可能是自签证书
+    # 🔥 核心修正：因为是同一个远程IP，必须通过 Node A 转发，否则无法连接
+    #dialer-proxy: "GZ_IPv6_Reality_2409"
+
+  # ------------------------------------------------
+  # 🏁 第3层: PCDN专用 (SS内网)
+  # ------------------------------------------------
+  - name: "USA-bwh81_Final_SS"
+    type: ss
+    server: "127.0.0.1"
+    port: 10086
+    cipher: "2022-blake3-aes-128-gcm"
+    password: "ovKZW39wYKjnrfsXOAn5Xw=="
+    udp: true
+    # 这里依然通过 VLESS 链路，如果 AnyTLS 通了，你也可以改成 AnyTLS_Trojan_8443
+    dialer-proxy: "USA-bwh81_grpc"
+    
+  - name: "sk5-de"
+    type: socks5
+    server: 178.95.172.75
+    port: 12324
+    username: 14a384aeb29dd
+    password: 6e8dee927f
+    udp: true
+    url: 'http://www.gstatic.com/generate_204'
+    interval: 300
+    dialer-proxy: 自动选择    
+    
+# ==================== 策略组 ====================
+proxy-groups:
+  - name: PROXY
+    type: select
+    # [修改点] 引入订阅源
+    #use:
+     # - MitceSub
+    proxies:
+      - freedom2负载均衡
+      - Hug负载均衡
+      - CF负载均衡      
+      - 自动选择
+      - vless-ws
+      - vmess-ws
+      - trojan-ws
+      - myfreedom01-SG_Railway_vless-ws
+      - myfreedom01-SG_Railway_vmess-ws
+      - myfreedom01-SG_Railway_trojan-ws      
+      - Hug-trojan
+      - Hug-vless
+      - CF官方优选-1
+      - CF官方优选-2
+      - CF官方优选-3
+      - USA-bwh81_grpc
+      - USA-bwh81-AnyTLS_8443
+      - USA-bwh81_Final_SS      
+      - DIRECT
+
+  - name: freedom2负载均衡
+    type: load-balance
+    proxies:
+      - vless-ws
+      - vmess-ws
+      - trojan-ws
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    strategy: consistent-hashing
+
+  - name: Hug负载均衡
+    type: load-balance
+    proxies:
+      - Hug-trojan
+      - Hug-vless
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    strategy: consistent-hashing
+
+  - name: CF负载均衡
+    type: load-balance
+    proxies:
+      - CF官方优选-1
+      - CF官方优选-2
+      - CF官方优选-3    
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    strategy: consistent-hashing
+
+  - name: myfreedom01
+    type: load-balance
+    proxies:
+      - myfreedom01-SG_Railway_vless-ws
+      - myfreedom01-SG_Railway_vmess-ws
+      - myfreedom01-SG_Railway_trojan-ws   
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    strategy: consistent-hashing    
+   
+  - name: 自动选择
+    type: url-test
+    # [修改点] 引入订阅源，让订阅节点也参与自动测速选择
+    #use:
+     # - MitceSub
+    proxies:
+      - vless-ws
+      - vmess-ws
+      - trojan-ws
+      - myfreedom01-SG_Railway_vless-ws
+      - myfreedom01-SG_Railway_vmess-ws
+      - myfreedom01-SG_Railway_trojan-ws      
+      - Hug-trojan
+      - Hug-vless
+      - CF官方优选-1
+      - CF官方优选-2
+      - CF官方优选-3      
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+
+# ==================== 规则集 ====================
+rule-providers:
+  reject:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt"
+    path: ./rules/reject.yaml
+    interval: 86400
+
+  direct:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt"
+    path: ./rules/direct.yaml
+    interval: 86400
+
+  private:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt"
+    path: ./rules/private.yaml
+    interval: 86400
+
+  cncidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt"
+    path: ./rules/cncidr.yaml
+    interval: 86400
+
+  lancidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt"
+    path: ./rules/lancidr.yaml
+    interval: 86400
+
+  proxy:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt"
+    path: ./rules/proxy.yaml
+    interval: 86400
+
+  google:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/google.txt"
+    path: ./rules/google.yaml
+    interval: 86400
+  stun:
+    type: http
+    behavior: classical
+    url: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/STUN/STUN.yaml"
+    path: ./rules/STUN.yaml
+    interval: 86400
+
+  specialport:
+    type: http
+    behavior: classical
+    url: "https://testingcf.jsdelivr.net/gh/Aethersailor/Custom_OpenClash_Rules@main/rule/Custom_Port_Direct.yaml"
+    path: ./rules/Custom_Port_Direct.yaml
+    interval: 86400
+    
+  TikTok-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/TikTok/TikTok-Site.mrs"
+    path: ./ruleset/TikTok-Site.mrs
+    proxy: DIRECT
+    interval: 86400    
+
+  OpenAI-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/OpenAI/OpenAI-Site.mrs'
+    path: ./ruleset/OpenAI-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+    
+  OpenAI-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/OpenAI/OpenAI-IP.mrs'
+    path: ./ruleset/OpenAI-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+    
+  Speedtest-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Speedtest/Speedtest-Site.mrs'
+    path: ./ruleset/Speedtest-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+    
+  Telegram-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Telegram/Telegram-Site.mrs'
+    path: ./ruleset/Telegram-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+    
+  Telegram-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Telegram/Telegram-IP.mrs'
+    path: ./ruleset/Telegram-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+
+  Telegram-cidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt"
+    path: ./rules/telegramcidr.yaml
+    interval: 86400
+
+  Telegram-No_Resolve:
+    type: http
+    behavior: classical
+    url: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Telegram/Telegram_No_Resolve.yaml"
+    path: ./rules/Telegram_No_Resolve.yaml
+    interval: 86400      
+    
+  Google-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Google/Google-Site.mrs'
+    path: ./ruleset/Google-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+    
+  Google-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Google/Google-IP.mrs'
+    path: ./ruleset/Google-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+    
+  GoogleFCM-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/GoogleFCM/GoogleFCM-Site.mrs'
+    path: ./ruleset/GoogleFCM-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+
+  GFWList-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/GFWList/GFWList-Site.mrs'
+    path: ./ruleset/GFWList-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+
+  Microsoft-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: 'https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Microsoft/Microsoft-Site.mrs'
+    path: ./ruleset/Microsoft-Site.mrs
+    proxy: DIRECT
+    interval: 86400    
+# ==================== 规则 ====================
+rules:
+  # 0. 443，8443和80,8080拦截
+  - 'AND,((DST-PORT,443),(NETWORK,UDP)),REJECT'
+  - 'AND,((DST-PORT,8443),(NETWORK,UDP)),REJECT' 
+  - 'AND,((DST-PORT,80),(NETWORK,UDP)),REJECT'
+  - 'AND,((DST-PORT,8080),(NETWORK,UDP)),REJECT'
+  
+  # 1. 广告拦截
+  - RULE-SET,reject,REJECT
+
+  # 2. Telegram单独放行
+  - RULE-SET,Telegram-Site,freedom2负载均衡,no-resolve
+  - RULE-SET,Telegram-IP,freedom2负载均衡,no-resolve
+  - RULE-SET,Telegram-cidr,freedom2负载均衡,no-resolve
+  - RULE-SET,Telegram-No_Resolve,freedom2负载均衡,no-resolve  
+  
+  # 3. STUN 强力阻断
+  - RULE-SET,stun,REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,19302)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,3478)),REJECT  
+  
+  # 4. 局域网/私有地址直连
+  - RULE-SET,lancidr,DIRECT
+  - RULE-SET,private,DIRECT
+  #- RULE-SET,direct,DIRECT
+  - GEOIP,PRIVATE,DIRECT,no-resolve
+  
+  # 5. google单独放行
+  - RULE-SET,google,自动选择
+  - RULE-SET,Google-Site,自动选择
+  - RULE-SET,Google-IP,自动选择
+  - RULE-SET,GoogleFCM-Site,自动选择  
+
+  # 6. 其他明细应用单独放行
+  - RULE-SET,TikTok-Site,freedom2负载均衡
+  - RULE-SET,OpenAI-Site,freedom2负载均衡
+  - RULE-SET,OpenAI-IP,freedom2负载均衡
+  - RULE-SET,Speedtest-Site,CF负载均衡
+
+  # 7. 国内直连
+  - GEOSITE,cn,DIRECT
+  - GEOIP,CN,DIRECT
+  - RULE-SET,cncidr,DIRECT
+  - RULE-SET,Microsoft-Site,DIRECT
+
+  # 8. 其他汇总大类指定走代理的规则
+  - RULE-SET,GFWList-Site,自动选择  
+  - RULE-SET,proxy,自动选择
+  - RULE-SET,specialport,自动选择  
+   
+  # 9. 最终兜底
+  - MATCH,自动选择
