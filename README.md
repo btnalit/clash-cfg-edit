@@ -23,7 +23,7 @@
 
 ```bash
 # 拉取最新镜像
-docker pull ghcr.io/xiaoyutx94/clash-config-editor:latest
+docker pull ghcr.io/btnalit/clash-cfg-edit:latest
 
 # 运行容器
 docker run -d \
@@ -32,8 +32,8 @@ docker run -d \
   -e AUTH_ENABLED=true \
   -e AUTH_USERNAME=admin \
   -e AUTH_PASSWORD=your_secure_password \
-  --name clash-config-editor \
-  ghcr.io/xiaoyutx94/clash-config-editor:latest
+  --name clash-cfg-edit \
+  ghcr.io/btnalit/clash-cfg-edit:latest
 ```
 
 访问：http://localhost:3088
@@ -44,9 +44,9 @@ docker run -d \
 ```yaml
 version: '3.8'
 services:
-  clash-config-editor:
-    image: ghcr.io/xiaoyutx94/clash-config-editor:latest
-    container_name: clash-config-editor
+  clash-cfg-edit:
+    image: ghcr.io/btnalit/clash-cfg-edit:latest
+    container_name: clash-cfg-edit
     ports:
       - "3088:3088"
     volumes:
@@ -67,14 +67,14 @@ docker-compose up -d
 
 1. 克隆项目：
 ```bash
-git clone https://github.com/xiaoyutx94/clash-config-editor.git
-cd clash-config-editor
+git clone https://github.com/btnalit/clash-cfg-edit.git
+cd clash-cfg-edit
 ```
 
 2. 构建并启动容器：
 ```bash
-docker build -t clash-config-editor .
-docker run -d -p 3088:3088 --name clash-editor clash-config-editor
+docker build -t clash-cfg-edit .
+docker run -d -p 3088:3088 --name clash-cfg-edit clash-cfg-edit
 ```
 
 3. 访问：http://localhost:3088
@@ -335,10 +335,10 @@ clash-config-editor/
 
 ```bash
 # 使用 tar 打包（排除 node_modules）
-tar --exclude='node_modules' --exclude='.git' -czvf clash-config-editor.tar.gz .
+tar --exclude='node_modules' --exclude='.git' -czvf clash-cfg-edit.tar.gz .
 
 # 或使用 Git 导出
-git archive --format=tar.gz -o clash-config-editor.tar.gz HEAD
+git archive --format=tar.gz -o clash-cfg-edit.tar.gz HEAD
 ```
 
 ## 📄 License
