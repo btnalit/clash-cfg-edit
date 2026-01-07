@@ -2,6 +2,8 @@
 
 一个现代化的 Clash/Mihomo 配置文件可视化编辑工具，提供友好的用户界面来简化 Clash 配置文件的编辑过程。
 
+> 原作者开源地址：https://github.com/xiaoyutx94/clash-config-editor
+
 ## ✨ 特性
 
 - 🎨 **直观的UI界面** - 基于 Vue 3 + Element Plus 的现代化界面
@@ -13,7 +15,7 @@
 - 🐳 **Docker部署** - 开箱即用的 Docker 容器化部署
 - 🌐 **全配置支持** - 支持 Mihomo 的所有主要配置项
 - 📡 **FTP 远程配置** - 支持通过 FTP 读取和保存远程配置文件（如 RouterOS）
-- �  **Mihomo API 集成** - 支持连接 Mihomo 后端，实时重载配置
+- 🔌 **Mihomo API 集成** - 支持连接 Mihomo 后端，实时重载配置
 
 ## 🚀 快速开始
 
