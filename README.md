@@ -347,7 +347,7 @@ MIT License
 
 ## 🤝 贡献
 
-欢迎提交 Issue 和 Pull Request！
+感谢原作者的开源项目！开源地址：https://github.com/xiaoyutx94/clash-config-editor
 
 ## 📮 联系方式
 
